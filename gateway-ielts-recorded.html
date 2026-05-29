@@ -741,9 +741,11 @@ footer strong{color:#94A3B8;}
 
 </style>
 
-<!-- GSAP + ScrollTrigger + Lenis -->
+<!-- GSAP 3.12.5 + ScrollTrigger (no Lenis) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<!-- Razorpay Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 
 
@@ -764,7 +766,7 @@ footer strong{color:#94A3B8;}
 
 <nav>
   <div class="logo">Gateway <span>Edu</span>Connect</div>
-  <a href="#enroll" class="nav-cta">Enroll for ₹99 →</a>
+  <a href="#enroll" class="nav-cta js-buy">Enroll for ₹99 →</a>
 </nav>
 
 <!-- HERO -->
@@ -786,7 +788,7 @@ footer strong{color:#94A3B8;}
         <span class="price-save">Save 80%</span>
       </div>
     </div>
-    <a href="#enroll" class="hero-cta">🔒 Get Instant Access — ₹99</a>
+    <a href="#enroll" class="hero-cta js-buy">🔒 Get Instant Access — ₹99</a>
     <div class="hero-trust">
       <span>Secure Razorpay</span>
       <span>Email Delivery</span>
@@ -955,7 +957,7 @@ footer strong{color:#94A3B8;}
 <div class="urgency" id="enroll">
   <h2>8 Classes + Mock Tests.<br><span>All for just ₹99.</span></h2>
   <p>Limited time introductory price. Don't miss it.</p>
-  <a href="YOUR_RAZORPAY_LINK_HERE" class="urgency-cta">🔒 Enroll Now — ₹99 Only</a>
+  <a href="#enroll" class="urgency-cta js-buy">🔒 Enroll Now — ₹99 Only</a>
   <div class="urgency-trust">
     <span>Secure Razorpay Payment</span>
     <span>Delivered to Your Email</span>
@@ -1053,6 +1055,52 @@ window.addEventListener('load', function(){
   }
 
   ScrollTrigger.refresh();
+});
+
+/* ===== RAZORPAY CHECKOUT =====
+   Replace RZP_KEY_ID with your live/test Key ID from the Razorpay Dashboard.
+   For production, generate `order_id` server-side and pass it below for
+   signature verification. After a successful payment, your backend (or a
+   Razorpay-configured email) sends the Google Drive link to the buyer. */
+var RZP_CONFIG = {
+  key: 'rzp_test_XXXXXXXXXXXXXX',   // <-- your Razorpay Key ID
+  amount: 9900,                     // ₹99 in paise
+  currency: 'INR',
+  name: 'Gateway EduConnect',
+  description: '8 IELTS Recorded Classes + IELTS & PTE Mock Tests',
+  theme: { color: '#0F2044' }
+};
+
+function startCheckout(){
+  if(typeof Razorpay === 'undefined'){
+    alert('Payment is loading — please check your connection and try again.');
+    return;
+  }
+  var opts = {
+    key: RZP_CONFIG.key,
+    amount: RZP_CONFIG.amount,
+    currency: RZP_CONFIG.currency,
+    name: RZP_CONFIG.name,
+    description: RZP_CONFIG.description,
+    theme: RZP_CONFIG.theme,
+    notes: { product: 'ielts-recorded-batch', delivery: 'google-drive-email' },
+    handler: function(response){
+      alert('Payment successful! 🎉\nYour Google Drive access link will be emailed to you shortly.\nPayment ID: ' + response.razorpay_payment_id);
+    },
+    modal: { ondismiss: function(){} }
+  };
+  try {
+    new Razorpay(opts).open();
+  } catch(e){
+    alert('Unable to start payment. Please try again.');
+  }
+}
+
+document.querySelectorAll('.js-buy').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    startCheckout();
+  });
 });
 </script>
 
